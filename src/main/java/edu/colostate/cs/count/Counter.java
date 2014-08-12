@@ -30,10 +30,16 @@ public class Counter extends ProcessingElement {
 
     public void onEvent(Event event) {
 
+        double time = event.get("time", Double.class);
+        String key1 = event.get("key1");
+        double key2 = event.get("key2", Double.class);
+        long key3 = event.get("key3", Long.class);
+        String key4 = event.get("key4");
+
         long currentValue = this.atomicLong.incrementAndGet();
-        if ((currentValue % 1000000) == 0){
-            System.out.println("Message Rate ==> " + 1000000000/ (System.currentTimeMillis() - this.lastTime) + " for stream " + event.getStreamId());
-            this.lastTime =  System.currentTimeMillis();
+        if ((currentValue % 1000000) == 0) {
+            System.out.println("Message Rate ==> " + 1000000000 / (System.currentTimeMillis() - this.lastTime) + " for stream " + event.getStreamId());
+            this.lastTime = System.currentTimeMillis();
         }
     }
 

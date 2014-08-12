@@ -17,7 +17,14 @@ public class Relay extends ProcessingElement {
 
     public void onEvent(Event event) {
 
-        this.remoteStream.put(event);
+        Event newEvent = new Event();
+        newEvent.put("time", Double.class,event.get("time", Double.class));
+        newEvent.put("key1", String.class, event.get("key1"));
+        newEvent.put("key2", Double.class,event.get("key2", Double.class));
+        newEvent.put("key3", Long.class,event.get("key3", Long.class));
+        newEvent.put("key4", String.class,event.get("key4"));
+
+        this.remoteStream.put(newEvent);
 
     }
 
