@@ -31,11 +31,16 @@ public class EventAdapter extends AdapterApp {
 
     @Inject
     @Named("streams")
-    int numOfStreams;
+    int streams;
 
     @Inject
     @Named("startPoint")
     int startPoint;
+
+    @Inject
+    @Named("threads")
+    int threads;
+
 
     private CountDownLatch latch;
 
@@ -126,13 +131,20 @@ public class EventAdapter extends AdapterApp {
     @Override
     protected void onStart() {
         //initialise the event senders
-        this.latch = new CountDownLatch(this.numOfStreams);
+        this.latch = new CountDownLatch(this.threads);
 
-        this.eventSenders = new EventSender[this.numOfStreams];
+        this.eventSenders = new EventSender[this.threads];
 
-        for (int i = 0; i < this.numOfStreams; i++) {
-            RemoteStream remoteStream = createOutputStream(Constants.STREAM_NAME + (i + this.startPoint));
-            this.eventSenders[i] = new EventSender(remoteStream, this.latch);
+        int streamsPerThread = this.streams / this.threads;
+        RemoteStream remoteStream;
+
+        for (int i = 0; i < this.threads; i++) {
+
+            this.eventSenders[i] = new EventSender(this.latch);
+            for (int j = 0; j < streamsPerThread; j++) {
+                remoteStream = createOutputStream(Constants.STREAM_NAME + (i * streamsPerThread + j + this.startPoint));
+                this.eventSenders[i].addRemoteStream(remoteStream);
+            }
             Thread thread = new Thread(this.eventSenders[i]);
             thread.start();
         }

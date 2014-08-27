@@ -4,9 +4,7 @@ import edu.colostate.cs.ecg.analyse.Record;
 import org.apache.s4.base.Event;
 import org.apache.s4.core.RemoteStream;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -28,17 +26,20 @@ public class EventSender implements Runnable {
 
     private CountDownLatch latch;
 
-    private RemoteStream remoteStream;
+    private List<RemoteStream> remoteStreams;
 
 
-    public EventSender(RemoteStream remoteStream,
-                       CountDownLatch latch) {
+    public EventSender(CountDownLatch latch) {
 
         this.messages = new LinkedList<Record>();
         this.isFinished = false;
         this.latch = latch;
-        this.remoteStream = remoteStream;
+        this.remoteStreams = new ArrayList<RemoteStream>();
 
+    }
+
+    public void addRemoteStream(RemoteStream remoteStream){
+        this.remoteStreams.add(remoteStream);
     }
 
     public synchronized void addRecord(Record record) {
@@ -100,7 +101,9 @@ public class EventSender implements Runnable {
         Event s4Event = new Event();
         s4Event.put(Constants.TIME, Double.class, new Double(event.getTime()));
         s4Event.put(Constants.VALUE, Double.class, new Double(event.getValue()));
-        this.remoteStream.put(s4Event);
+        for (RemoteStream remoteStream : this.remoteStreams){
+            remoteStream.put(s4Event);
+        }
 
     }
 
