@@ -98,11 +98,13 @@ public class EventSender implements Runnable {
 
     public void publishEvent(Record event) {
 
-        Event s4Event = new Event();
-        s4Event.put(Constants.TIME, Double.class, new Double(event.getTime()));
-        s4Event.put(Constants.VALUE, Double.class, new Double(event.getValue()));
+        Event s4Event = null;
         for (RemoteStream remoteStream : this.remoteStreams){
+            s4Event = new Event();
+            s4Event.put(Constants.TIME, Double.class, new Double(event.getTime()));
+            s4Event.put(Constants.VALUE, Double.class, new Double(event.getValue()));
             remoteStream.put(s4Event);
+            this.numberOfRecords++;
         }
 
     }
@@ -121,7 +123,6 @@ public class EventSender implements Runnable {
         // record will be thread executions is over.
         while ((record = getRecord()) != null) {
             this.publishEvent(record);
-            this.numberOfRecords++;
         }
         this.latch.countDown();
     }
