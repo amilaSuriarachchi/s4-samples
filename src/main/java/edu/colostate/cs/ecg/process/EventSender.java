@@ -26,20 +26,22 @@ public class EventSender implements Runnable {
 
     private CountDownLatch latch;
 
-    private List<RemoteStream> remoteStreams;
+    private RemoteStream remoteStream;
+
+    // streams start point for this thread
+    private int startPoint;
+    // number of streams this thread has to produce
+    private int streams;
 
 
-    public EventSender(CountDownLatch latch) {
+    public EventSender(CountDownLatch latch, RemoteStream remoteStream, int startPoint, int streams) {
 
         this.messages = new LinkedList<Record>();
         this.isFinished = false;
         this.latch = latch;
-        this.remoteStreams = new ArrayList<RemoteStream>();
-
-    }
-
-    public void addRemoteStream(RemoteStream remoteStream){
-        this.remoteStreams.add(remoteStream);
+        this.remoteStream = remoteStream;
+        this.startPoint = startPoint;
+        this.streams = streams;
     }
 
     public synchronized void addRecord(Record record) {
@@ -99,25 +101,19 @@ public class EventSender implements Runnable {
     public void publishEvent(Record event) {
 
         Event s4Event = null;
-        for (RemoteStream remoteStream : this.remoteStreams){
+        for (int i = 0; i < this.streams; i++){
             s4Event = new Event();
+            s4Event.put(Constants.STREAM_ID, String.class, "ecg" + (this.startPoint + i));
             s4Event.put(Constants.TIME, Double.class, new Double(event.getTime()));
             s4Event.put(Constants.VALUE, Double.class, new Double(event.getValue()));
             remoteStream.put(s4Event);
             this.numberOfRecords++;
         }
-
     }
 
 
     @Override
     public void run() {
-
-        Random random = new Random(5);
-        try {
-            Thread.sleep(random.nextInt(5000));
-        } catch (InterruptedException e) {}
-        this.publishEvent(new Record(0.0, 0.0));
 
         Record record = null;
         // record will be thread executions is over.

@@ -12,4 +12,5 @@ public interface Constants {
     public static final String STREAM_NAME = "ecg";
     public static final String TIME = "time";
     public static final String VALUE = "value";
+    public static final String STREAM_ID = "ecg_stream_id";
 }

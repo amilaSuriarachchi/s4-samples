@@ -2,6 +2,8 @@ package edu.colostate.cs.ecg.process;
 
 import edu.colostate.cs.ecg.analyse.Record;
 import edu.colostate.cs.ecg.analyse.RecordReader;
+import org.apache.s4.base.Event;
+import org.apache.s4.base.KeyFinder;
 import org.apache.s4.core.RemoteStream;
 import org.apache.s4.core.adapter.AdapterApp;
 
@@ -9,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -136,24 +139,20 @@ public class EventAdapter extends AdapterApp {
         this.eventSenders = new EventSender[this.threads];
 
         int streamsPerThread = this.streams / this.threads;
-        RemoteStream remoteStream;
+        RemoteStream remoteStream = createOutputStream(Constants.STREAM_NAME, new KeyFinder<Event>() {
+            @Override
+            public List<String> get(Event event) {
+                return Arrays.asList(new String[]{event.get(Constants.STREAM_ID)});
+            }
+        });
 
         for (int i = 0; i < this.threads; i++) {
 
-            this.eventSenders[i] = new EventSender(this.latch);
-            for (int j = 0; j < streamsPerThread; j++) {
-                remoteStream = createOutputStream(Constants.STREAM_NAME + (i * streamsPerThread + j + this.startPoint));
-                this.eventSenders[i].addRemoteStream(remoteStream);
-            }
+            this.eventSenders[i] =
+                    new EventSender(this.latch, remoteStream, (this.startPoint + streamsPerThread * i), streamsPerThread);
+
             Thread thread = new Thread(this.eventSenders[i]);
             thread.start();
-        }
-
-        // just wait until all dummy messages are send
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-
         }
 
         // initialise the event senders

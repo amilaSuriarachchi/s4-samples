@@ -18,14 +18,6 @@ import java.util.List;
  */
 public class EventApp extends App {
 
-    @Inject
-    @Named("streams")
-    int numOfStreams;
-
-    @Inject
-    @Named("startPoint")
-    int startPoint;
-
     @Override
     protected void onStart() {
 
@@ -34,20 +26,16 @@ public class EventApp extends App {
     @Override
     protected void onInit() {
 
-        for (int i = 0; i < numOfStreams; i++) {
-            // create a prototype
-            EventPE eventPE = createPE(EventPE.class);
+        // create a prototype
+        EventPE eventPE = createPE(EventPE.class);
 
-
-            // Create a stream that listens to the "names" stream and passes events to the counter instance.
-            createInputStream(Constants.STREAM_NAME + (i + this.startPoint), new KeyFinder<Event>() {
-                @Override
-                public List<String> get(Event event) {
-                    return Arrays.asList(new String[]{event.getStreamId()});
-                }
-            }, eventPE);
-        }
-
+        // Create a stream that listens to the "names" stream and passes events to the counter instance.
+        createInputStream(Constants.STREAM_NAME, new KeyFinder<Event>() {
+            @Override
+            public List<String> get(Event event) {
+                return Arrays.asList(new String[]{event.get(Constants.STREAM_ID)});
+            }
+        }, eventPE);
     }
 
     @Override

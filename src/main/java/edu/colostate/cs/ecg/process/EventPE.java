@@ -27,7 +27,7 @@ public class EventPE extends ProcessingElement {
 
         long currentValue = this.atomicLong.incrementAndGet();
         if ((currentValue % 1000000) == 0){
-            System.out.println("Message Rate ==> " + 1000000000/ (System.currentTimeMillis() - this.lastTime) + " - Current value " + currentValue );
+            System.out.println("Message Rate ==> " + 1000000000/ (System.currentTimeMillis() - this.lastTime) + " - Current value " + currentValue);
             this.lastTime =  System.currentTimeMillis();
         }
 
@@ -48,11 +48,12 @@ public class EventPE extends ProcessingElement {
 
     }
 
-
-
-
-
-
-
-
+    @Override
+    protected Object clone() {
+        EventPE eventPE = (EventPE) super.clone();
+        eventPE.tompikens = new Tompikens();
+        eventPE.atomicLong = new AtomicLong();
+        eventPE.lastTime = System.currentTimeMillis();
+        return eventPE;
+    }
 }
